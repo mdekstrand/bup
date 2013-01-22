@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys, time
-from bup import hashsplit, git, options, client
+from bup import hashsplit, git, options, client, smartsplit
 from bup.helpers import *
 
 
@@ -26,6 +26,7 @@ max-pack-size=  maximum bytes in a single pack
 max-pack-objects=  maximum number of objects in a single pack
 fanout=    average number of blobs in a single tree
 bwlimit=   maximum bytes/sec to transmit to server
+tar        enable special handling of tar archives
 #,compress=  set compression level to # (0-9, 9 is highest) [1]
 """
 o = options.Options(optspec)
@@ -126,6 +127,9 @@ if opt.git_ids:
 else:
     # the input either comes from a series of files or from stdin.
     files = extra and (open(fn) for fn in extra) or [sys.stdin]
+
+if opt.tar:
+    files = smartsplit.split_tar(files)
 
 if pack_writer and opt.blobs:
     shalist = hashsplit.split_to_blobs(pack_writer.new_blob, files,

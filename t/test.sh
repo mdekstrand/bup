@@ -514,3 +514,14 @@ WVSTART "save disjoint top-level directories"
     # For now, assume that "ls -a" and "sort" use the same order.
     WVPASSEQ "$(bup ls -a src/latest)" "$(echo -e "$top_dir/\ntmp/" | sort)"
 ) || WVFAIL
+
+WVSTART "split tar files"
+D=tarsplit.tmp
+export BUP_DIR="$D/.bup"
+rm -rf $D
+mkdir $D
+WVPASS bup init
+WVPASS tar cf "$D/sampledata.tar" t/sampledata
+WVPASS bup split --tar -n sampledata-tarsplit <"$D/sampledata.tar"
+WVPASS bup join sampledata-tarsplit >"$D/sampledata-out.tar"
+WVPASS cmp "$D/sampledata.tar" "$D/sampledata-out.tar"
